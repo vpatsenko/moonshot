@@ -1,6 +1,4 @@
-use crate::{
-    errors::ContractError, events::*, state::global::*
-};
+use crate::{errors::ContractError, events::*, state::global::*};
 use anchor_lang::prelude::*;
 
 #[event_cpi]

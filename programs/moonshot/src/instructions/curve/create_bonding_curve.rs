@@ -51,7 +51,7 @@ pub struct CreateBondingCurve<'info> {
         bump,
     )]
     global: Box<Account<'info, Global>>,
-    
+
     #[account(
         seeds = [Whitelist::SEED_PREFIX.as_bytes(), creator.key().as_ref()],
         bump,
@@ -89,6 +89,7 @@ impl<'info> IntoBondingCurveLockerCtx<'info> for CreateBondingCurve<'info> {
         }
     }
 }
+
 impl CreateBondingCurve<'_> {
     pub fn validate(&self, params: &CreateBondingCurveParams) -> Result<()> {
         let clock = Clock::get()?;
@@ -106,15 +107,11 @@ impl CreateBondingCurve<'_> {
         ctx: Context<CreateBondingCurve>,
         params: CreateBondingCurveParams,
     ) -> Result<()> {
-
         let global = ctx.accounts.global.clone();
         let clock = Clock::get()?;
         if global.whitelist_enabled {
             let whitelist = ctx.accounts.whitelist.is_some();
-            require!(
-                whitelist,
-                ContractError::NotWhiteList
-            );
+            require!(whitelist, ContractError::NotWhiteList);
         }
         ctx.accounts.bonding_curve.update_from_params(
             ctx.accounts.mint.key(),
@@ -145,7 +142,7 @@ impl CreateBondingCurve<'_> {
                 },
                 mint_auth_signer_seeds,
             ),
-            ctx.accounts.bonding_curve.token_total_supply
+            ctx.accounts.bonding_curve.token_total_supply,
         )?;
 
         let locker = &mut ctx
@@ -156,7 +153,7 @@ impl CreateBondingCurve<'_> {
 
         BondingCurve::invariant(locker)?;
         let bonding_curve = ctx.accounts.bonding_curve.as_mut();
-        emit_cpi!(CreateEvent {
+        emit!(CreateEvent {
             name: params.name,
             symbol: params.symbol,
             uri: params.uri,
@@ -172,6 +169,7 @@ impl CreateBondingCurve<'_> {
         msg!("CreateBondingCurve::handler: success");
         Ok(())
     }
+
     pub fn intialize_meta(
         &mut self,
         mint_auth_signer_seeds: &[&[&[u8]]; 1],
@@ -206,5 +204,4 @@ impl CreateBondingCurve<'_> {
         msg!("CreateBondingCurve::intialize_meta: done");
         Ok(())
     }
-
 }
